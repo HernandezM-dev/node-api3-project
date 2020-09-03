@@ -4,7 +4,7 @@ const postDb = require('../posts/postDb')
 const { insert } = require('../data/dbConfig');
 const router = express.Router();
 
-router.post('/', validateUser, (req, res) => {
+router.post('/', validateUser, validatePost(), (req, res) => {
   db.insert(req.body)
   //could improve by checking if name is unique and displaying corresponding error
   .then(user =>{
@@ -15,7 +15,7 @@ router.post('/', validateUser, (req, res) => {
   })
 });
 
-router.post('/:id/posts', validateUserId(), (req, res) => {
+router.post('/:id/posts', validateUserId(),  (req, res) => {
     postDb.insert(req.body)
     .then(post =>{
       res.status(200).json(post)
@@ -109,7 +109,6 @@ function validateUserId() {
 }
 
 function validateUser(req, res, next) {
-  console.log(req.body)
   req.body && req.body.name 
   ? next() 
   : !req.body ? 
@@ -118,7 +117,13 @@ function validateUser(req, res, next) {
 }
 
 function validatePost(req, res, next) {
-  // do your magic!
+  return function (req, res, next) {
+    req.body && req.body.text 
+    ? next() 
+    : !req.body ? 
+      res.status(400).json({errorMessage: "Missing user data"})
+      : res.status(400).json({ message: "missing required test field" })
+  }
 }
 
 module.exports = router;
